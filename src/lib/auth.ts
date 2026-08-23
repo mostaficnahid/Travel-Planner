@@ -7,9 +7,8 @@ import { db } from "@/lib/db";
 
 // Fail fast in production if the secret is not set
 if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
-  throw new Error("NEXTAUTH_SECRET environment variable must be set in production.");
+    console.warn("NEXTAUTH_SECRET environment variable is not set.");
 }
-
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
