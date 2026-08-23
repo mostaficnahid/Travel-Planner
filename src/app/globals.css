@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ── Brand Color Palette (extracted from Travel Planner logo) ─────────────────
+ *   Navy       #1B2F5E  — headline text / deep backgrounds
+ *   Teal       #1BA8B5  — globe, arcs, primary interactive
+ *   Gold       #C8872A  — compass rose, premium accent
+ *   Orange     #E87B2A  — energy arc, CTA gradient
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+/* ── DARK MODE (default) ──────────────────────────────────────────────────── */
+:root,
+.dark {
+  color-scheme: dark;
+
+  --background:           #070D1A;
+  --foreground:           #F0F4F8;
+  --card:                 #0E1929;
+  --card-border:          rgba(27,168,181,0.18);
+  --card-foreground:      #F0F4F8;
+  --primary:              #1BA8B5;
+  --primary-foreground:   #ffffff;
+  --secondary:            #1B2F5E;
+  --secondary-foreground: #F0F4F8;
+  --accent:               #C8872A;
+  --accent-foreground:    #ffffff;
+  --orange:               #E87B2A;
+  --muted:                #8DA4BF;
+  --muted-foreground:     #4A6380;
+  --border:               rgba(27,168,181,0.15);
+
+  /* Body radial ambients */
+  --bg-radial-1: rgba(27,168,181,0.14);
+  --bg-radial-2: rgba(27, 47, 94,0.25);
+  --bg-radial-3: rgba(200,135, 42,0.10);
+  --bg-radial-4: rgba(232,123, 42,0.08);
+
+  /* Navbar */
+  --navbar-bg: rgba(7,13,26,0.92);
+  --navbar-border: rgba(27,168,181,0.20);
+
+  /* Glass card */
+  --glass-bg: rgba(14,25,41,0.80);
+  --glass-border: rgba(27,168,181,0.18);
+
+  /* Form inputs */
+  --input-bg: #050C17;
+  --input-border: rgba(255,255,255,0.10);
+  --input-text: #F0F4F8;
+
+  /* Scrollbar */
+  --scrollbar-track: #070D1A;
+  --scrollbar-thumb: #1BA8B5;
+}
+
+/* ── LIGHT MODE ───────────────────────────────────────────────────────────── */
+.light {
+  color-scheme: light;
+
+  --background:           #EEF4FA;
+  --foreground:           #0D1E38;
+  --card:                 #FFFFFF;
+  --card-border:          rgba(27,168,181,0.20);
+  --card-foreground:      #0D1E38;
+  --primary:              #1490A0;   /* slightly deeper teal for contrast on white */
+  --primary-foreground:   #ffffff;
+  --secondary:            #1B2F5E;
+  --secondary-foreground: #ffffff;
+  --accent:               #B57420;   /* deeper gold on light bg */
+  --accent-foreground:    #ffffff;
+  --orange:               #D96B18;
+  --muted:                #5A7A99;
+  --muted-foreground:     #7A96B0;
+  --border:               rgba(27,168,181,0.20);
+
+  --bg-radial-1: rgba(27,168,181,0.08);
+  --bg-radial-2: rgba(27, 47, 94,0.06);
+  --bg-radial-3: rgba(200,135, 42,0.06);
+  --bg-radial-4: rgba(232,123, 42,0.04);
+
+  --navbar-bg: rgba(238,244,250,0.92);
+  --navbar-border: rgba(27,168,181,0.25);
+
+  --glass-bg: rgba(255,255,255,0.85);
+  --glass-border: rgba(27,168,181,0.22);
+
+  --input-bg: #F5F9FD;
+  --input-border: rgba(27,168,181,0.22);
+  --input-text: #0D1E38;
+
+  --scrollbar-track: #EEF4FA;
+  --scrollbar-thumb: #1BA8B5;
+}
+
+/* ── Base body ────────────────────────────────────────────────────────────── */
+html {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(at 0%   0%,   var(--bg-radial-1) 0px, transparent 55%),
+    radial-gradient(at 100% 0%,   var(--bg-radial-2) 0px, transparent 55%),
+    radial-gradient(at 50%  100%, var(--bg-radial-3) 0px, transparent 55%),
+    radial-gradient(at 100% 100%, var(--bg-radial-4) 0px, transparent 55%);
+  background-attachment: fixed;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* ── Light-mode surface overrides for hardcoded Tailwind classes ──────────── */
+/* Only override genuinely dark Tailwind background classes */
+.light .bg-slate-900,
+.light .bg-slate-900\/80,
+.light .bg-slate-900\/90,
+.light .bg-slate-950 {
+  background-color: #F4F8FC !important;
+}
+.light .bg-slate-800 { background-color: #E8F0F8 !important; }
+
+/* Make faint Tailwind borders visible */
+.light .border-white\/10,
+.light .border-white\/15,
+.light .border-white\/20 {
+  border-color: rgba(27,168,181,0.25) !important;
+}
+
+/* ── Body text colours in light mode ─────────────────────────────────────── */
+/* NOTE: Do NOT override .text-white — buttons need white text on dark gradients */
+.light .text-slate-400 { color: #4A6A88 !important; }
+.light .text-slate-500 { color: #6A8AA8 !important; }
+.light .text-slate-300 { color: #2A4A6A !important; }
+.light .text-slate-200 { color: #1A3A5A !important; }
+/* text-white is intentionally NOT overridden — preserves button text on gradient */
+
+/* Headings use the foreground variable */
+.light h1, .light h2, .light h3, .light h4 { color: var(--foreground); }
+
+/* Navbar in light mode */
+.light header[class*="sticky"] {
+  background: var(--navbar-bg) !important;
+  border-bottom-color: var(--navbar-border) !important;
+}
+
+/* Card / panel backgrounds */
+.light .glass-card-3d {
+  background: rgba(255,255,255,0.90) !important;
+  border-color: rgba(27,168,181,0.22) !important;
+  box-shadow: 0 8px 32px -8px rgba(27,47,94,0.12), 0 0 0 1px rgba(27,168,181,0.10) inset;
+}
+
+/* ── Universal light-mode form element fixes ────────────────────────────── */
+/* Inputs / textareas on light mode always get light background + dark text */
+.light input,
+.light textarea,
+.light select {
+  background-color: #F5F9FD !important;
+  color: #0D1E38 !important;
+  border-color: rgba(27,168,181,0.28) !important;
+}
+.light input::placeholder,
+.light textarea::placeholder {
+  color: #8DA4BF !important;
+}
+.light input:focus,
+.light textarea:focus,
+.light select:focus {
+  outline: none !important;
+  ring-color: #1BA8B5 !important;
+  border-color: #1BA8B5 !important;
+  box-shadow: 0 0 0 3px rgba(27,168,181,0.18) !important;
+}
+
+/* Auth card backgrounds in light mode */
+.light .auth-card {
+  background: rgba(255,255,255,0.95) !important;
+  border-color: rgba(27,168,181,0.28) !important;
+  box-shadow: 0 24px 64px -12px rgba(27,47,94,0.14), 0 0 0 1px rgba(27,168,181,0.10) !important;
+}
+
+/* Trips page cards in light mode */
+.light .trip-card {
+  background: rgba(255,255,255,0.92) !important;
+  border-color: rgba(27,168,181,0.22) !important;
+}
+
+/* ── Glow utilities ───────────────────────────────────────────────────────── */
+.glow-teal   { box-shadow: 0 0 50px -10px rgba(27,168,181,0.45); }
+.glow-gold   { box-shadow: 0 0 50px -10px rgba(200,135,42,0.40); }
+.glow-navy   { box-shadow: 0 0 50px -10px rgba(27,47,94,0.50);  }
+.glow-blue   { box-shadow: 0 0 50px -10px rgba(27,168,181,0.40); }
+.glow-indigo { box-shadow: 0 0 50px -10px rgba(27,47,94,0.40);  }
+
+/* ── Glassmorphic 3D card ─────────────────────────────────────────────────── */
+.glass-card-3d {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 30px 60px -15px rgba(0,0,0,0.35),
+    0 0 0 1px rgba(27,168,181,0.08) inset;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb  { background: var(--scrollbar-thumb); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #C8872A; }
+
+/* ── Selection ────────────────────────────────────────────────────────────── */
+::selection {
+  background: rgba(27,168,181,0.30);
+  color: #fff;
+}
+
+/* ── 3D perspective utilities ─────────────────────────────────────────────── */
+.perspective-2000   { perspective: 2000px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden    { backface-visibility: hidden; }
+.translate-z-12     { transform: translateZ(30px); }
+.translate-z-20     { transform: translateZ(50px); }
+.translate-z-30     { transform: translateZ(70px); }
+
+/* ── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes spinGlobe {
+  0%   { transform: rotateY(0deg)   rotateX(15deg); }
+  100% { transform: rotateY(360deg) rotateX(15deg); }
+}
+@keyframes orbitRotate {
+  0%   { transform: rotateZ(0deg)   rotateY(0deg);   }
+  100% { transform: rotateZ(360deg) rotateY(360deg); }
+}
+@keyframes floatParticle {
+  0%, 100% { transform: translateY(0px)   scale(1);   }
+  50%       { transform: translateY(-20px) scale(1.1); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1);    }
+  50%       { opacity: 0.8; transform: scale(1.05); }
+}
+@keyframes compassSpin {
+  0%, 85%  { transform: rotate(0deg);   }
+  90%      { transform: rotate(15deg);  }
+  95%      { transform: rotate(-10deg); }
+  100%     { transform: rotate(0deg);   }
+}
+
+/* Theme toggle spin */
+@keyframes themeSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-spin-globe     { animation: spinGlobe      20s linear     infinite; }
+.animate-orbit-ring     { animation: orbitRotate    15s linear     infinite; }
+.animate-float-particle { animation: floatParticle   5s ease-in-out infinite; }
+.animate-pulse-glow     { animation: pulseGlow       4s ease-in-out infinite; }
+.animate-compass-idle   { animation: compassSpin     6s ease-in-out infinite; }
+
+/* ── Leaflet overrides ────────────────────────────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px -5px rgba(0,0,0,0.3) !important;
+  border: 1px solid var(--card-border) !important;
+}
+.leaflet-popup-tip { background: var(--card) !important; }
+
+/* ── Print / PDF export ───────────────────────────────────────────────────── */
+@media print {
+  header, footer, nav, button { display: none !important; }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    background-image: none !important;
+  }
+  h1, h2, h3, h4, span, p { color: #000000 !important; }
+}

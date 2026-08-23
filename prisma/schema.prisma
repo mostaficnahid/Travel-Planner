@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ── Production: PostgreSQL (Neon, Supabase, Railway, etc.) ────────────────
+// Set DATABASE_URL to your PostgreSQL connection string in Vercel env vars.
+// For local dev: use a local PostgreSQL instance or a free Neon dev branch.
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String             @id @default(uuid())
+  email         String             @unique
+  name          String?
+  passwordHash  String?            // bcrypt hash for credential auth; null for OAuth users
+  avatarUrl     String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  profile       Profile?
+  preferences   TravelPreference?
+  trips         Trip[]             @relation("UserTrips")
+  collaborations TripCollaborator[]
+  conversations AiConversation[]
+  savedPlaces   SavedPlace[]
+  notifications Notification[]
+}
+
+
+model Profile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  homeCurrency   String   @default("USD")
+  passportCountry String?
+  bio            String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TravelPreference {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preferredTravelStyle String   @default("balanced")
+  dietaryRestrictions  String   @default("none")
+  accessibilityNeeds   String   @default("none")
+  maxDailyWalkingKm    Float    @default(8.0)
+  transportPreference  String   @default("public")
+  interestsJson        String   @default("[]")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Trip {
+  id             String             @id @default(uuid())
+  userId         String
+  user           User               @relation("UserTrips", fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  destination    String
+  country        String?
+  startDate      DateTime
+  endDate        DateTime
+  travelerCount  Int                @default(1)
+  budget         Float
+  currency       String             @default("USD")
+  budgetFlexibility String          @default("balanced") // strict, balanced, flexible
+  travelStyle    String             @default("balanced") // budget, balanced, luxury, etc.
+  interestsJson  String             @default("[]")
+  constraintsJson String            @default("{}")
+  status         String             @default("planned") // draft, planned, active, completed
+  coverImageUrl  String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  
+  days           ItineraryDay[]
+  expenses       Expense[]
+  budgetDetails  Budget?
+  weatherSnapshots WeatherSnapshot[]
+  conversations  AiConversation[]
+  travelers      TripTraveler[]
+  collaborators  TripCollaborator[]
+  packingItems   PackingItem[]
+}
+
+model TripTraveler {
+  id        String   @id @default(uuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  name      String
+  email     String?
+  role      String   @default("traveler") // adult, child, senior
+  createdAt DateTime @default(now())
+}
+
+model TripCollaborator {
+  id        String   @id @default(uuid())
+  tripId    String
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permission String  @default("edit") // view, edit, admin
+  createdAt DateTime @default(now())
+
+  @@unique([tripId, userId]) // Prevent duplicate collaborator records
+}
+
+model ItineraryDay {
+  id             String     @id @default(uuid())
+  tripId         String
+  trip           Trip       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  dayNumber      Int
+  date           DateTime
+  theme          String?
+  summary        String?
+  estimatedCost  Float      @default(0.0)
+  travelDistance Float      @default(0.0) // in km
+  travelTime     Int        @default(0)   // in minutes
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  activities     Activity[]
+}
+
+model Activity {
+  id                 String       @id @default(uuid())
+  dayId              String
+  day                ItineraryDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  placeId            String?
+  place              Place?       @relation(fields: [placeId], references: [id])
+  title              String
+  description        String?
+  category           String       @default("sightseeing") // sightseeing, food, accommodation, transport, outdoor, cultural
+  startTime          String       // HH:mm format
+  endTime            String       // HH:mm format
+  durationMinutes    Int          @default(60)
+  estimatedCost      Float        @default(0.0)
+  transportMode      String       @default("walk") // walk, transit, taxi, drive
+  lat                Float
+  lng                Float
+  address            String?
+  priority           Int          @default(1) // 1=high, 2=medium, 3=optional
+  weatherSensitivity String       @default("outdoor") // outdoor, indoor, flexible
+  bookingUrl         String?
+  openingHours       String?
+  isCompleted        Boolean      @default(false)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Place {
+  id           String     @id @default(uuid())
+  name         String
+  category     String
+  description  String?
+  lat          Float
+  lng          Float
+  address      String?
+  rating       Float?
+  priceLevel   Int?       // 1, 2, 3, 4
+  openingHours String?
+  imageUrl     String?
+  websiteUrl   String?
+  tagsJson     String     @default("[]")
+  createdAt    DateTime   @default(now())
+  
+  activities   Activity[]
+  savedBy      SavedPlace[]
+}
+
+// Hotel and Restaurant models have been removed — hotel data is served dynamically
+// from the places service (searchHotels / searchPlaces) and embedded in the GeneratedItinerary.
+// Re-add these models if you want to cache hotel data server-side in future.
+
+model Budget {
+  id                String   @id @default(uuid())
+  tripId            String   @unique
+  trip              Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  totalPlanned      Float
+  accommodationBudget Float  @default(0)
+  transportBudget   Float    @default(0)
+  foodBudget        Float    @default(0)
+  activitiesBudget  Float    @default(0)
+  shoppingBudget    Float    @default(0)
+  miscBudget        Float    @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  category    String   // accommodation, transport, food, activities, shopping, misc
+  title       String
+  amount      Float
+  currency    String   @default("USD")
+  isPlanned   Boolean  @default(false)
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WeatherSnapshot {
+  id               String   @id @default(uuid())
+  tripId           String
+  trip             Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  date             DateTime
+  tempMax          Float
+  tempMin          Float
+  condition        String   // Sunny, Rainy, Cloudy, Stormy, etc.
+  precipProbability Int     // 0-100%
+  icon             String?
+  createdAt        DateTime @default(now())
+}
+
+model CurrencyRate {
+  id           String   @id @default(uuid())
+  baseCurrency String
+  targetCurrency String
+  rate         Float
+  asOf         DateTime @default(now())
+  
+  @@unique([baseCurrency, targetCurrency])
+}
+
+model SavedPlace {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   String
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model AiConversation {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId    String?
+  trip      Trip?       @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  title     String      @default("Trip Planning Chat")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  messages  AiMessage[]
+}
+
+model AiMessage {
+  id             String         @id @default(uuid())
+  conversationId String
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String         // user, assistant, system, tool
+  content        String
+  toolCallsJson  String?
+  toolResultJson String?
+  createdAt      DateTime       @default(now())
+}
+
+model PackingItem {
+  id          String   @id @default(uuid())
+  tripId      String
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  category    String   @default("general") // clothing, electronics, documents, toilet, misc
+  item        String
+  isPacked    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

@@ -1,0 +1,92 @@
+import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
+
+// Fail fast in production if the secret is not set
+if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
+  throw new Error("NEXTAUTH_SECRET environment variable must be set in production.");
+}
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  pages: {
+    signIn: "/login",
+    error: "/login",
+  },
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID || "",
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
+    }),
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email", placeholder: "you@example.com" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error("Email and password are required.");
+        }
+
+        // Lookup user in DB
+        const user = await db.user.findUnique({
+          where: { email: credentials.email },
+          select: { id: true, email: true, name: true, avatarUrl: true, passwordHash: true },
+        });
+
+        // Don't reveal whether the email exists — same error for both cases
+        if (!user || !user.passwordHash) {
+          throw new Error("Invalid email or password.");
+        }
+
+        const passwordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!passwordValid) {
+          throw new Error("Invalid email or password.");
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? user.email.split("@")[0],
+          image: user.avatarUrl ?? `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.email)}`,
+        };
+      },
+    }),
+  ],
+
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email ?? undefined;
+        token.name = user.name ?? undefined;
+        token.picture = user.image ?? undefined;
+        token.provider = account?.provider;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        // session.user is now fully typed via src/types/next-auth.d.ts
+        session.user.id = token.id ?? "";
+        session.user.email = token.email ?? null;
+        session.user.name = token.name ?? null;
+        session.user.image = token.picture as string | null ?? null;
+        session.user.provider = token.provider;
+      }
+      return session;
+    },
+  },
+};
