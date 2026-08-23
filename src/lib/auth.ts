@@ -5,10 +5,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
-// Fail fast in production if the secret is not set
-if (process.env.NODE_ENV === "production" && !process.env.NEXTAUTH_SECRET) {
-    console.warn("NEXTAUTH_SECRET environment variable is not set.");
+// NOTE: NEXTAUTH_SECRET is only available at runtime on Vercel (not build time).
+// We validate lazily — do NOT throw here as it breaks the Next.js static build.
+if (process.env.NEXTAUTH_SECRET === undefined && process.env.NODE_ENV === "production") {
+  console.warn("[auth] NEXTAUTH_SECRET is not set. Authentication will fail at runtime.");
 }
+
+
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
