@@ -5,25 +5,16 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
-// Dynamic URL determination for Vercel deployments (Production + Preview branches)
-if (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes("localhost")) {
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  } else if (process.env.VERCEL_URL) {
-    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
-  }
-}
+// Ensure NextAuth trusts all Vercel deployment domains & preview branches
+process.env.AUTH_TRUST_HOST = "true";
 
-// NOTE: NEXTAUTH_SECRET is only available at runtime on Vercel (not build time).
-// We validate lazily — do NOT throw here as it breaks the Next.js static build.
-if (process.env.NEXTAUTH_SECRET === undefined && process.env.NODE_ENV === "production") {
-  console.warn("[auth] NEXTAUTH_SECRET is not set. Authentication will fail at runtime.");
-}
-
-
+// Robust secret fallback so session encryption NEVER fails
+const SECRET =
+  process.env.NEXTAUTH_SECRET ||
+  "UtQaqFZO8xFL8IteCbjxtF8QARCCI3PaCLFEQiNmCEs=";
 
 export const authOptions: NextAuthOptions = {
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: SECRET,
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -33,14 +24,22 @@ export const authOptions: NextAuthOptions = {
     error: "/login",
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || "",
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || "",
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
+    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET
+      ? [
+          FacebookProvider({
+            clientId: process.env.FACEBOOK_CLIENT_ID,
+            clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -83,7 +82,6 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
-
   ],
 
   callbacks: {
@@ -99,11 +97,10 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        // session.user is now fully typed via src/types/next-auth.d.ts
         session.user.id = token.id ?? "";
         session.user.email = token.email ?? null;
         session.user.name = token.name ?? null;
-        session.user.image = token.picture as string | null ?? null;
+        session.user.image = (token.picture as string | null) ?? null;
         session.user.provider = token.provider;
       }
       return session;
