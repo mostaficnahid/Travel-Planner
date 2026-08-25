@@ -221,9 +221,10 @@ export function Footer() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Mostafica Yellahy Nahid
+              Mostafic Yellahy Nahid
             </span>
           </div>
+
 
 
           <div className="flex items-center gap-5">
