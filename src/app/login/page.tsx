@@ -53,10 +53,12 @@ function LoginForm() {
     setError(null);
     setIsLoading(true);
     try {
-      const res = await signIn("credentials", { redirect: false, email, password });
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await signIn("credentials", { redirect: false, email: cleanEmail, password });
       if (res?.ok) {
-        login(email);
+        login(cleanEmail);
         router.push(redirectTarget);
+        router.refresh();
       } else {
         setError("Incorrect email or password. Please try again.");
       }
@@ -66,6 +68,7 @@ function LoginForm() {
       setIsLoading(false);
     }
   };
+
 
   const handleOAuth = async (provider: "google" | "facebook") => {
     setOauthLoading(provider);

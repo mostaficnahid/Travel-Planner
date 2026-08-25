@@ -17,9 +17,18 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { email, password, name } = RegisterSchema.parse(body);
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
 
-    // Check for existing account
-    const existing = await db.user.findUnique({ where: { email } });
+    // Check for existing account with case-insensitive query
+    const existing = await db.user.findFirst({
+      where: {
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
+    });
     if (existing) {
       return NextResponse.json(
         { success: false, error: "An account with this email already exists." },
@@ -33,16 +42,17 @@ export async function POST(req: Request) {
     // Create user + profile atomically
     const user = await db.user.create({
       data: {
-        email,
-        name,
+        email: normalizedEmail,
+        name: cleanName,
         passwordHash,
-        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`,
+        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(cleanName)}`,
         profile: {
           create: {
             homeCurrency: "USD",
           },
         },
       },
+
       select: {
         id: true,
         email: true,

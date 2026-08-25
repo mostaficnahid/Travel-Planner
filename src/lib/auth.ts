@@ -49,23 +49,30 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Email and password are required.");
+          return null;
         }
 
-        // Lookup user in DB
-        const user = await db.user.findUnique({
-          where: { email: credentials.email },
+        const cleanEmail = credentials.email.trim().toLowerCase();
+
+        // Lookup user in DB with case-insensitive match
+        const user = await db.user.findFirst({
+          where: {
+            email: {
+              equals: cleanEmail,
+              mode: "insensitive",
+            },
+          },
           select: { id: true, email: true, name: true, avatarUrl: true, passwordHash: true },
         });
 
-        // Don't reveal whether the email exists — same error for both cases
+        // If user not found or has no password (OAuth user)
         if (!user || !user.passwordHash) {
-          throw new Error("Invalid email or password.");
+          return null;
         }
 
         const passwordValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!passwordValid) {
-          throw new Error("Invalid email or password.");
+          return null;
         }
 
         return {
@@ -76,6 +83,7 @@ export const authOptions: NextAuthOptions = {
         };
       },
     }),
+
   ],
 
   callbacks: {

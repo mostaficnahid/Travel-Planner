@@ -81,26 +81,30 @@ function RegisterForm() {
     setError(null);
     setIsLoading(true);
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanName = name.trim();
       const res  = await fetch("/api/auth/register", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ name, email, password }),
+        body:    JSON.stringify({ name: cleanName, email: cleanEmail, password }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Registration failed. Please try again."); return; }
 
-      const signInRes = await signIn("credentials", { email, password, redirect: false });
+      const signInRes = await signIn("credentials", { email: cleanEmail, password, redirect: false });
       if (signInRes?.error) {
         setError("Account created! Please sign in on the login page.");
         return;
       }
       router.push(redirectTarget);
+      router.refresh();
     } catch {
       setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const handleOAuth = async (provider: "google" | "facebook") => {
     setOauthLoading(provider);
