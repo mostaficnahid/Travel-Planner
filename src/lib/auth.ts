@@ -5,11 +5,21 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+// Dynamic URL determination for Vercel deployments (Production + Preview branches)
+if (!process.env.NEXTAUTH_URL || process.env.NEXTAUTH_URL.includes("localhost")) {
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  } else if (process.env.VERCEL_URL) {
+    process.env.NEXTAUTH_URL = `https://${process.env.VERCEL_URL}`;
+  }
+}
+
 // NOTE: NEXTAUTH_SECRET is only available at runtime on Vercel (not build time).
 // We validate lazily — do NOT throw here as it breaks the Next.js static build.
 if (process.env.NEXTAUTH_SECRET === undefined && process.env.NODE_ENV === "production") {
   console.warn("[auth] NEXTAUTH_SECRET is not set. Authentication will fail at runtime.");
 }
+
 
 
 export const authOptions: NextAuthOptions = {
