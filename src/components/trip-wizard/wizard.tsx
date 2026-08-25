@@ -5,10 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
-  Calendar,
-  Users,
   DollarSign,
-  Compass,
   Heart,
   Sliders,
   Sparkles,
@@ -17,7 +14,6 @@ import {
   ArrowLeft,
   Loader2,
   ChevronDown,
-  Globe,
 } from "lucide-react";
 import { WORLD_CURRENCIES } from "@/lib/services/currency";
 import { useAuth } from "@/lib/context/AuthContext";
@@ -74,6 +70,11 @@ const GENERATION_STEPS = [
   "Validating budget & schedule constraints...",
   "Finalizing personalized 196-country trip itinerary...",
 ];
+
+const INPUT_CLS =
+  "w-full px-4 py-3.5 rounded-xl border font-medium text-sm transition-all duration-200 " +
+  "bg-[var(--input-bg)] text-[var(--input-text)] border-[var(--input-border)] placeholder:text-[var(--muted)] " +
+  "focus:outline-none focus:ring-2 focus:ring-[#1BA8B5] focus:border-[#1BA8B5]";
 
 export function TripWizard() {
   const router = useRouter();
@@ -168,37 +169,54 @@ export function TripWizard() {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center space-y-8">
         <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full border-4 border-blue-500/20 animate-ping opacity-75"></div>
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-500 flex items-center justify-center text-white shadow-xl shadow-blue-500/40">
+          <div className="absolute inset-0 rounded-full border-4 border-[#1BA8B5]/20 animate-ping opacity-75"></div>
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center text-white shadow-xl"
+            style={{
+              background: "linear-gradient(135deg, #1BA8B5 0%, #1B2F5E 55%, #C8872A 100%)",
+              boxShadow: "0 12px 36px -6px rgba(27,168,181,0.50)",
+            }}
+          >
             <Sparkles className="w-10 h-10 animate-spin" />
           </div>
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-white">Crafting Expedition to {formData.destination}</h2>
-          <p className="text-sm text-slate-400 mt-2">
+          <h2 className="text-2xl font-black tracking-tight" style={{ color: "var(--foreground)" }}>
+            Crafting Expedition to {formData.destination}
+          </h2>
+          <p className="text-sm mt-2 font-medium" style={{ color: "var(--muted)" }}>
             Geocoding venues, calculating 2-Opt routes, checking live weather & fitting your budget...
           </p>
         </div>
 
-        <div className="bg-slate-900/90 p-6 rounded-3xl border border-white/10 shadow-2xl space-y-4 text-left backdrop-blur-xl">
+        <div
+          className="p-6 rounded-3xl border shadow-2xl space-y-4 text-left backdrop-blur-xl"
+          style={{ background: "var(--card)", borderColor: "var(--card-border)" }}
+        >
           {GENERATION_STEPS.map((stepText, idx) => (
             <div key={idx} className="flex items-center gap-3">
               {idx < generationStepIdx ? (
                 <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
               ) : idx === generationStepIdx ? (
-                <Loader2 className="w-5 h-5 text-blue-400 animate-spin shrink-0" />
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" style={{ color: "#1BA8B5" }} />
               ) : (
-                <div className="w-5 h-5 rounded-full border-2 border-slate-700 shrink-0" />
+                <div
+                  className="w-5 h-5 rounded-full border-2 shrink-0"
+                  style={{ borderColor: "var(--card-border)" }}
+                />
               )}
               <span
-                className={`text-sm font-medium ${
-                  idx === generationStepIdx
-                    ? "text-blue-400 font-bold"
-                    : idx < generationStepIdx
-                    ? "text-slate-200"
-                    : "text-slate-500"
-                }`}
+                className="text-sm font-medium transition-colors"
+                style={{
+                  color:
+                    idx === generationStepIdx
+                      ? "#1BA8B5"
+                      : idx < generationStepIdx
+                      ? "var(--foreground)"
+                      : "var(--muted)",
+                  fontWeight: idx === generationStepIdx ? 700 : 500,
+                }}
               >
                 {stepText}
               </span>
@@ -221,21 +239,38 @@ export function TripWizard() {
         ].map((s) => (
           <div key={s.num} className="flex items-center gap-2.5">
             <div
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black transition ${
-                step >= s.num
-                  ? "bg-gradient-to-tr from-blue-600 via-indigo-600 to-amber-500 text-white shadow-lg shadow-blue-500/30 border border-white/20"
-                  : "bg-slate-900 text-slate-500 border border-white/10"
-              }`}
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black transition border"
+              style={{
+                background:
+                  step >= s.num
+                    ? "linear-gradient(135deg, #1BA8B5 0%, #1B2F5E 60%, #C8872A 100%)"
+                    : "var(--card)",
+                color: step >= s.num ? "#ffffff" : "var(--muted)",
+                borderColor: step >= s.num ? "rgba(27,168,181,0.4)" : "var(--card-border)",
+                boxShadow: step >= s.num ? "0 4px 16px -2px rgba(27,168,181,0.40)" : "none",
+              }}
             >
               {s.num}
             </div>
-            <span className="hidden sm:inline text-xs font-extrabold text-slate-300">{s.label}</span>
+            <span
+              className="hidden sm:inline text-xs font-black tracking-wide"
+              style={{ color: step >= s.num ? "var(--foreground)" : "var(--muted)" }}
+            >
+              {s.label}
+            </span>
           </div>
         ))}
       </div>
 
-      {/* Step Form Content */}
-      <div className="bg-slate-900/80 backdrop-blur-2xl rounded-3xl p-8 sm:p-12 border border-white/10 shadow-2xl space-y-8">
+      {/* Step Form Container */}
+      <div
+        className="backdrop-blur-2xl rounded-3xl p-8 sm:p-12 border shadow-2xl space-y-8"
+        style={{
+          background: "var(--card)",
+          borderColor: "var(--card-border)",
+          boxShadow: "0 24px 64px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(27,168,181,0.08) inset",
+        }}
+      >
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div
@@ -246,11 +281,11 @@ export function TripWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-blue-400" />
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2.5" style={{ color: "var(--foreground)" }}>
+                  <MapPin className="w-5 h-5 shrink-0" style={{ color: "#1BA8B5" }} />
                   Select or Write Destination (Any of 196 Countries)
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm mt-1.5 font-medium" style={{ color: "var(--muted)" }}>
                   Type any destination or click the dropdown arrow to pick from popular global cities.
                 </p>
               </div>
@@ -258,7 +293,7 @@ export function TripWizard() {
               <div className="space-y-4">
                 {/* Searchable Combobox Dropdown Input */}
                 <div className="relative">
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                     Destination City / Country
                   </label>
                   <div className="relative flex items-center">
@@ -271,12 +306,13 @@ export function TripWizard() {
                         setIsDropdownOpen(true);
                       }}
                       placeholder="Select from dropdown or type any city/country..."
-                      className="w-full pl-4 pr-10 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+                      className={INPUT_CLS + " pr-10"}
                     />
                     <button
                       type="button"
                       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="absolute right-3.5 text-slate-400 hover:text-white p-1"
+                      className="absolute right-3.5 p-1 transition-colors"
+                      style={{ color: "var(--muted)" }}
                     >
                       <ChevronDown className={`w-4 h-4 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
@@ -284,7 +320,14 @@ export function TripWizard() {
 
                   {/* Dropdown Options Drawer */}
                   {isDropdownOpen && (
-                    <div className="absolute z-30 left-0 right-0 mt-2 bg-slate-900 rounded-2xl border border-white/15 shadow-2xl max-h-60 overflow-y-auto divide-y divide-white/5">
+                    <div
+                      className="absolute z-30 left-0 right-0 mt-2 rounded-2xl border shadow-2xl max-h-60 overflow-y-auto backdrop-blur-2xl"
+                      style={{
+                        background: "var(--card)",
+                        borderColor: "var(--card-border)",
+                        boxShadow: "0 16px 40px -8px rgba(0,0,0,0.30)",
+                      }}
+                    >
                       {filteredDestinations.length > 0 ? (
                         filteredDestinations.map((d) => (
                           <div
@@ -293,15 +336,27 @@ export function TripWizard() {
                               updateField("destination", `${d.city}, ${d.country}`);
                               setIsDropdownOpen(false);
                             }}
-                            className="px-4 py-3 hover:bg-blue-600/20 cursor-pointer flex items-center justify-between text-xs font-medium text-slate-200 transition"
+                            className="px-4 py-3.5 cursor-pointer flex items-center justify-between text-xs font-medium transition border-b last:border-b-0 hover:bg-[rgba(27,168,181,0.12)]"
+                            style={{ borderColor: "var(--card-border)" }}
                           >
-                            <span className="font-bold text-white">{d.city}</span>
-                            <span className="text-slate-400 font-normal">{d.country}</span>
+                            <span className="font-bold text-sm" style={{ color: "var(--foreground)" }}>
+                              {d.city}
+                            </span>
+                            <span
+                              className="text-[11px] font-bold px-2.5 py-0.5 rounded-full"
+                              style={{
+                                background: "rgba(27,168,181,0.12)",
+                                color: "#1BA8B5",
+                                border: "1px solid rgba(27,168,181,0.25)",
+                              }}
+                            >
+                              {d.country}
+                            </span>
                           </div>
                         ))
                       ) : (
-                        <div className="px-4 py-3 text-xs text-slate-400 text-center font-medium">
-                          Custom Destination: <strong>&quot;{formData.destination}&quot;</strong> (Will be geocoded automatically)
+                        <div className="px-4 py-3 text-xs text-center font-medium" style={{ color: "var(--muted)" }}>
+                          Custom Destination: <strong style={{ color: "var(--foreground)" }}>&quot;{formData.destination}&quot;</strong> (Will be geocoded automatically)
                         </div>
                       )}
                     </div>
@@ -310,25 +365,25 @@ export function TripWizard() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                       Start Date
                     </label>
                     <input
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => updateField("startDate", e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+                      className={INPUT_CLS}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                       End Date
                     </label>
                     <input
                       type="date"
                       value={formData.endDate}
                       onChange={(e) => updateField("endDate", e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+                      className={INPUT_CLS}
                     />
                   </div>
                 </div>
@@ -345,11 +400,11 @@ export function TripWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-blue-400" />
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2.5" style={{ color: "var(--foreground)" }}>
+                  <DollarSign className="w-5 h-5 shrink-0" style={{ color: "#10b981" }} />
                   Budget & Currency
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm mt-1.5 font-medium" style={{ color: "var(--muted)" }}>
                   Select from 196 world currencies with live conversion intelligence.
                 </p>
               </div>
@@ -357,7 +412,7 @@ export function TripWizard() {
               <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                       Total Budget
                     </label>
                     <input
@@ -365,21 +420,25 @@ export function TripWizard() {
                       step={50}
                       value={formData.budget}
                       onChange={(e) => updateField("budget", parseFloat(e.target.value) || 0)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-lg"
+                      className={INPUT_CLS + " font-black text-lg"}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                       Currency Code
                     </label>
                     <select
                       value={formData.currency}
                       onChange={(e) => updateField("currency", e.target.value)}
-                      className="w-full px-4 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-sm"
+                      className={INPUT_CLS}
                     >
                       {WORLD_CURRENCIES.map((c) => (
-                        <option key={c.code} value={c.code} className="bg-slate-900 text-white">
+                        <option
+                          key={c.code}
+                          value={c.code}
+                          style={{ background: "var(--card)", color: "var(--foreground)" }}
+                        >
                           {c.code} - {c.name} ({c.symbol})
                         </option>
                       ))}
@@ -388,7 +447,7 @@ export function TripWizard() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: "var(--muted)" }}>
                     Number of Travelers
                   </label>
                   <input
@@ -397,7 +456,7 @@ export function TripWizard() {
                     max={20}
                     value={formData.travelerCount}
                     onChange={(e) => updateField("travelerCount", parseInt(e.target.value) || 1)}
-                    className="w-32 px-4 py-3.5 rounded-xl border border-white/10 bg-slate-950 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold text-lg"
+                    className={INPUT_CLS + " w-36 font-black text-lg"}
                   />
                 </div>
               </div>
@@ -413,20 +472,20 @@ export function TripWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-blue-400" />
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2.5" style={{ color: "var(--foreground)" }}>
+                  <Heart className="w-5 h-5 shrink-0" style={{ color: "#E87B2A" }} />
                   Travel Style & Interests
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
-                  Select your travel persona and preferences.
+                <p className="text-sm mt-1.5 font-medium" style={{ color: "var(--muted)" }}>
+                  Select your travel persona and customize activities.
                 </p>
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                <label className="block text-xs font-black uppercase tracking-wider mb-3" style={{ color: "var(--muted)" }}>
                   Travel Style
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     "budget",
                     "balanced",
@@ -437,20 +496,53 @@ export function TripWizard() {
                     "adventure",
                     "cultural",
                     "food-focused",
-                  ].map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      onClick={() => updateField("travelStyle", style)}
-                      className={`px-3 py-2.5 rounded-xl text-xs font-bold capitalize transition border ${
-                        formData.travelStyle === style
-                          ? "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/30"
-                          : "bg-slate-950 text-slate-300 border-white/10 hover:bg-slate-800"
-                      }`}
-                    >
-                      {style.replace("-", " ")}
-                    </button>
-                  ))}
+                  ].map((style) => {
+                    const isSelected = formData.travelStyle === style;
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        onClick={() => updateField("travelStyle", style)}
+                        className="px-4 py-3 rounded-2xl text-xs font-bold capitalize transition-all border transform hover:scale-[1.02] active:scale-95"
+                        style={{
+                          background: isSelected
+                            ? "linear-gradient(135deg, #1BA8B5 0%, #1B2F5E 100%)"
+                            : "var(--card)",
+                          color: isSelected ? "#ffffff" : "var(--foreground)",
+                          borderColor: isSelected ? "#1BA8B5" : "var(--card-border)",
+                          boxShadow: isSelected ? "0 4px 16px -2px rgba(27,168,181,0.45)" : "none",
+                        }}
+                      >
+                        {style.replace("-", " ")}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="block text-xs font-black uppercase tracking-wider mb-3" style={{ color: "var(--muted)" }}>
+                  Interests & Venues
+                </label>
+                <div className="flex flex-wrap gap-2.5">
+                  {INTEREST_OPTIONS.map((interest) => {
+                    const isSelected = formData.interests.includes(interest);
+                    return (
+                      <button
+                        key={interest}
+                        type="button"
+                        onClick={() => toggleInterest(interest)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold transition-all border transform hover:scale-105"
+                        style={{
+                          background: isSelected ? "rgba(27,168,181,0.15)" : "var(--card)",
+                          color: isSelected ? "#1BA8B5" : "var(--foreground)",
+                          borderColor: isSelected ? "#1BA8B5" : "var(--card-border)",
+                        }}
+                      >
+                        {interest}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
@@ -465,11 +557,11 @@ export function TripWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Sliders className="w-5 h-5 text-blue-400" />
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2.5" style={{ color: "var(--foreground)" }}>
+                  <Sliders className="w-5 h-5 shrink-0" style={{ color: "#C8872A" }} />
                   Personal Constraints & Pacing
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm mt-1.5 font-medium" style={{ color: "var(--muted)" }}>
                   Fine-tune daily intensity and transport preferences.
                 </p>
               </div>
@@ -477,10 +569,10 @@ export function TripWizard() {
               <div className="space-y-5">
                 <div>
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    <label className="text-xs font-black uppercase tracking-wider" style={{ color: "var(--muted)" }}>
                       Max Daily Walking Target
                     </label>
-                    <span className="text-sm font-bold text-blue-400">
+                    <span className="text-sm font-black" style={{ color: "#1BA8B5" }}>
                       {formData.constraints.maxDailyWalkingKm} km / day
                     </span>
                   </div>
@@ -496,7 +588,7 @@ export function TripWizard() {
                         maxDailyWalkingKm: parseInt(e.target.value),
                       })
                     }
-                    className="w-full accent-blue-500"
+                    className="w-full accent-[#1BA8B5] cursor-pointer"
                   />
                 </div>
               </div>
@@ -505,12 +597,20 @@ export function TripWizard() {
         </AnimatePresence>
 
         {/* Buttons */}
-        <div className="flex justify-between items-center pt-6 border-t border-white/10">
+        <div
+          className="flex justify-between items-center pt-6 border-t"
+          style={{ borderColor: "var(--card-border)" }}
+        >
           {step > 1 ? (
             <button
               type="button"
               onClick={() => setStep((s) => s - 1)}
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-white/10 text-slate-300 text-sm font-semibold hover:bg-slate-800 transition"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border text-sm font-bold transition hover:scale-105"
+              style={{
+                background: "var(--card)",
+                borderColor: "var(--card-border)",
+                color: "var(--foreground)",
+              }}
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
@@ -523,17 +623,29 @@ export function TripWizard() {
               type="button"
               disabled={!formData.destination}
               onClick={() => setStep((s) => s + 1)}
-              className="flex items-center gap-1.5 px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-bold shadow-lg shadow-blue-600/30 disabled:opacity-50 transition border border-white/20"
+              className="flex items-center gap-1.5 px-7 py-3 rounded-xl text-sm font-black shadow-lg transition-all transform hover:scale-105 active:scale-95 disabled:opacity-50 border border-white/20"
+              style={{
+                background: "linear-gradient(135deg, #1BA8B5 0%, #1B2F5E 100%)",
+                boxShadow: "0 6px 20px -4px rgba(27,168,181,0.50)",
+                color: "#ffffff",
+              }}
             >
-              Continue <ArrowRight className="w-4 h-4" />
+              <span style={{ color: "#ffffff" }}>Continue</span>
+              <ArrowRight className="w-4 h-4" style={{ color: "#ffffff" }} />
             </button>
           ) : (
             <button
               type="button"
               onClick={handleGenerate}
-              className="flex items-center gap-2 px-9 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-500 hover:from-blue-500 hover:to-indigo-500 text-white text-sm font-black shadow-xl shadow-blue-600/30 transition transform active:scale-95 border border-white/20"
+              className="flex items-center gap-2 px-9 py-3.5 rounded-xl text-sm font-black shadow-xl transition transform hover:scale-105 active:scale-95 border border-white/20"
+              style={{
+                background: "linear-gradient(135deg, #1BA8B5 0%, #1B2F5E 55%, #C8872A 100%)",
+                boxShadow: "0 8px 28px -6px rgba(27,168,181,0.50)",
+                color: "#ffffff",
+              }}
             >
-              <Sparkles className="w-5 h-5" /> Generate Trip Plan
+              <Sparkles className="w-5 h-5" style={{ color: "#ffffff" }} />
+              <span style={{ color: "#ffffff" }}>Generate Trip Plan</span>
             </button>
           )}
         </div>
