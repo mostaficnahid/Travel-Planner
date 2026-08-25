@@ -197,21 +197,34 @@ export function Footer() {
           </div>
 
           {/* ── Developer Credit ─────────────────────────────────── */}
-          <p className="text-[11px] font-medium flex items-center gap-1.5" style={{ color: "var(--muted-foreground)" }}>
-            Developed with
-            <span className="text-rose-400" aria-hidden="true">♥</span>
-            by{" "}
+          <div
+            className="flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-all hover:scale-105"
+            style={{
+              background: "rgba(27,168,181,0.08)",
+              borderColor: "rgba(27,168,181,0.25)",
+            }}
+          >
+            <span className="text-[11px] font-semibold" style={{ color: "var(--muted)" }}>
+              Developed with
+            </span>
+            <span className="text-rose-500 text-xs animate-pulse" aria-hidden="true">
+              ♥
+            </span>
+            <span className="text-[11px] font-semibold" style={{ color: "var(--muted)" }}>
+              by
+            </span>
             <span
-              className="font-black"
+              className="text-xs font-black tracking-wide"
               style={{
-                background: "linear-gradient(90deg, #1BA8B5, #C8872A)",
+                background: "linear-gradient(90deg, #1BA8B5 0%, #C8872A 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
             >
               Mostafica Yellahy Nahid
             </span>
-          </p>
+          </div>
+
 
           <div className="flex items-center gap-5">
             {["Privacy Policy", "Terms of Service", "Security"].map((item, i, arr) => (

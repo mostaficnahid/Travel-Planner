@@ -4,7 +4,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Bell, Globe, LogIn, LogOut, Moon, Plus, Sun, X } from "lucide-react";
+import { Bell, Globe, LogIn, LogOut, Moon, Plus, Sun, X, User, Compass, ChevronDown } from "lucide-react";
 import { useCurrency } from "@/lib/context/CurrencyContext";
 import { useAuth } from "@/lib/context/AuthContext";
 import { useTheme } from "@/lib/context/ThemeContext";
@@ -29,6 +29,9 @@ export function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
   const isDark = theme === "dark";
 
   // Poll notifications every 60 s
@@ -51,10 +54,12 @@ export function Navbar() {
   useEffect(() => {
     function h(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     }
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
+
 
   const handleOpenNotifs = async () => {
     setNotifOpen((o) => !o);
@@ -234,30 +239,81 @@ export function Navbar() {
                 )}
               </div>
 
-              {/* Avatar + name */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold"
-                style={{ background: pillBg, borderColor: pillBorder, color: pillText }}>
-                {user.image ? (
-                  <img src={user.image} alt={user.name}
-                    className="w-6 h-6 rounded-full object-cover border" style={{ borderColor: "#1BA8B5" }} />
-                ) : (
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-black"
-                    style={{ background: "linear-gradient(135deg,#1BA8B5,#1B2F5E)" }}>
-                    {user.name.charAt(0)}
+              {/* Avatar + Profile Dropdown Menu */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all hover:scale-105"
+                  style={{ background: pillBg, borderColor: pillBorder, color: pillText }}
+                >
+                  {user.image ? (
+                    <img src={user.image} alt={user.name}
+                      className="w-6 h-6 rounded-full object-cover border" style={{ borderColor: "#1BA8B5" }} />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] text-white font-black"
+                      style={{ background: "linear-gradient(135deg,#1BA8B5,#1B2F5E)" }}>
+                      {user.name.charAt(0)}
+                    </div>
+                  )}
+                  <span className="max-w-[100px] truncate">{user.name}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${profileOpen ? "rotate-180" : ""}`} style={{ color: "var(--muted)" }} />
+                </button>
+
+                {profileOpen && (
+                  <div
+                    className="absolute right-0 top-12 w-56 rounded-2xl border overflow-hidden z-50 shadow-2xl p-2 space-y-1"
+                    style={{ background: dropdownBg, backdropFilter: "blur(20px)", borderColor: dropBorder }}
+                  >
+                    <div className="px-3 py-2 border-b" style={{ borderColor: "rgba(27,168,181,0.15)" }}>
+                      <p className="text-xs font-bold truncate" style={{ color: "var(--foreground)" }}>{user.name}</p>
+                      <p className="text-[10px] truncate" style={{ color: "var(--muted)" }}>{user.email}</p>
+                    </div>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition hover:bg-[rgba(27,168,181,0.10)]"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      <User className="w-3.5 h-3.5" style={{ color: "#1BA8B5" }} />
+                      <span>My Profile & Settings</span>
+                    </Link>
+
+                    <Link
+                      href="/trips"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition hover:bg-[rgba(27,168,181,0.10)]"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      <Compass className="w-3.5 h-3.5" style={{ color: "#C8872A" }} />
+                      <span>My Expeditions</span>
+                    </Link>
+
+                    <Link
+                      href="/trips/new"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold transition hover:bg-[rgba(27,168,181,0.10)]"
+                      style={{ color: "var(--foreground)" }}
+                    >
+                      <Plus className="w-3.5 h-3.5" style={{ color: "#10b981" }} />
+                      <span>New Trip</span>
+                    </Link>
+
+                    <div className="pt-1 border-t" style={{ borderColor: "rgba(27,168,181,0.15)" }}>
+                      <button
+                        onClick={() => { setProfileOpen(false); logout(); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition text-left"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
                   </div>
                 )}
-                <span>{user.name}</span>
               </div>
-
-              <button onClick={logout} title="Sign out"
-                className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-2 rounded-xl transition-all
-                           border border-transparent hover:bg-rose-500/10 hover:border-rose-500/25"
-                style={{ color: "var(--muted)" }}>
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
             </div>
           ) : (
+
             <Link href="/login"
               className="flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border
                          border-transparent hover:border-[rgba(27,168,181,0.28)] hover:bg-[rgba(27,168,181,0.08)] transition-all"
